@@ -1,0 +1,106 @@
+---
+title: "COVID_CEA"
+author: "Philip Wikman"
+date: "18/2/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("CEA.R")
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+```{r}
+Pob=100000 
+t=26 
+ProbHosp=0.15 
+ProbExitus=0.05 
+ProbAlta=0.95
+ProbUCI=0.15 
+ProbPlanta=0.5
+```
+
+```{r}
+transitions<-CEA()
+transitions<-cbind(as.data.frame(transitions[1]),as.data.frame(transitions[2]),as.data.frame(transitions[3]), as.data.frame(transitions[4]), as.data.frame(transitions[5]),t=1:52)
+#transitions<-transitions%>%gather(key="States", value="Population", inf, Hosp, UCI, Exitus, Curados,t)
+head(transitions)
+```
+
+
+
+```{r}
+estados<-c("Infectados"="blue", "Hospitalizados"="red", "UCI"="magenta", "Exitus"="black", "Curados"="green")
+
+ggplot(transitions, aes(x=1:52, y=inf, color="Infectados"))+
+  geom_line()+
+  geom_line(aes(y=Hosp, color="Hospitalizados"))+
+  geom_line(aes(y=UCI, color="UCI"))+
+  geom_line(aes(y=Exitus, color="Exitus"))+
+  geom_line(aes(y=Curados, color="Curados"))+
+  theme_classic()+
+  ggtitle("Evolución de los estados simulados")+
+  labs(y="Pacientes",
+       x="Semanas",
+       color="Legend")+
+  scale_color_manual(values=estados)
+
+```
+```{r}
+Qalys<-sum(transitions[,1]*0.8+transitions[,2]*0.5+transitions[,3]*0.2+transitions[,5])
+Qalys
+```
+```{r}
+Costs<-sum(transitions[,2]*350*7+transitions[,3]*1000*7)
+Costs
+```
+```{r}
+ACER<-Costs/Qalys
+ACER
+```
+
+```{r}
+transitions<-CEA(ProbHosp = 0.015)
+transitions<-cbind(as.data.frame(transitions[1]),as.data.frame(transitions[2]),as.data.frame(transitions[3]), as.data.frame(transitions[4]), as.data.frame(transitions[5]),t=1:52)
+#transitions<-transitions%>%gather(key="States", value="Population", inf, Hosp, UCI, Exitus, Curados,t)
+head(transitions)
+```
+
+
+
+```{r}
+estados<-c("Infectados"="blue", "Hospitalizados"="red", "UCI"="magenta", "Exitus"="black", "Curados"="green")
+
+ggplot(transitions, aes(x=1:52, y=inf, color="Infectados"))+
+  geom_line()+
+  geom_line(aes(y=Hosp, color="Hospitalizados"))+
+  geom_line(aes(y=UCI, color="UCI"))+
+  geom_line(aes(y=Exitus, color="Exitus"))+
+  geom_line(aes(y=Curados, color="Curados"))+
+  theme_classic()+
+  ggtitle("Evolución de los estados simulados")+
+  labs(y="Pacientes",
+       x="Semanas",
+       color="Legend")+
+  scale_color_manual(values=estados)
+
+```
+
+```{r}
+Qalys_treat<-sum(transitions[,1]*0.8+transitions[,2]*0.5+transitions[,3]*0.2+transitions[,5])
+Qalys_treat
+```
+```{r}
+Costs_treat<-sum(transitions[,2]*350*7+transitions[,3]*1000*7+100000*2473.99)
+Costs_treat
+```
+```{r}
+CostDiff<-(Costs_treat-Costs)
+QalysDiff<-(Qalys_treat-Qalys)
+ICER<-CostDiff/QalysDiff
+CostDiff
+QalysDiff
+ICER
+```

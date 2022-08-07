@@ -1,0 +1,112 @@
+---
+title: "Análisis de coste-efectividad de Bamlanivimab/Etesimab para pacientes con COVID-19 de alto riesgo"
+author: "Philip Wikman"
+date: "18/2/2022"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("Tree.R")
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+# Análisis de coste eficacia de Bamlanivimab
+
+Dado el carácter agudo de la infección por COVID-19 y su periodo de tiempo relativamente corto, el modelo adecuado para un análisis de coste-efectividad de diferentes intervenciones sería un árbol decisional.
+
+
+## Rama con Bamlanivimab
+## Probabilidades del árbol decisional
+```{r}
+ProbIng=0.021
+ProbICU=0.001
+ProbExitusICU=0.01
+ProbExitus=0.0001
+
+Precio=1250
+QW=0.1
+```
+### Proporción de cada uno de los nodos finales
+```{r}
+propcada<-Tree(ProbIng=0.021, ProbICU=0.001, ProbExitusICU=0.01, ProbExitus=0.0001)
+propcada
+```
+### Distribución teórica de una cohorte de 100000 en cada uno de los nodos
+```{r}
+100000*propcada
+```
+### Cálculo de los AVACS
+Se ha escogido como peso para el cálculo de los AVACS aquellos reportados por Poteet et al. 2021
+```{r}
+Qalys_FA<-sum(100000*propcada[c(1,3,5)]*QW) 
+Qalys_FA
+```
+### Cálculo de los Costes
+Los costes se han obtenido del decreto ley de pagos de Cataluña
+```{r}
+Coste_FA<-sum(100000*propcada[c(1,2)]*43400+100000*propcada[c(3,4)]*5000+100000*Precio)
+Coste_FA
+```
+## Cálculo de la ratio de coste-efectividad
+```{r}
+ACER_FA<-Coste_FA/Qalys_FA
+ACER_FA
+``` 
+# Análisis de rama sin el Fármaco
+## Probabilidades del árbol decisional
+```{r}
+ProbIng=0.07
+ProbICU=0.001
+ProbExitusICU=0.01
+ProbExitus=0.019
+
+Precio=0
+```
+### Proporción de cada uno de los nodos finales
+```{r}
+propcada<-Tree(ProbIng=0.07, ProbICU=0.001, ProbExitusICU=0.01, ProbExitus=0.019)
+propcada
+```
+### Distribución teórica de una cohorte de 100000 en cada uno de los nodos
+```{r}
+100000*propcada
+```
+### Cálculo de los AVACS
+Se ha escogido como peso para el cálculo de los AVACS aquellos reportados por Poteet et al. 2021
+```{r}
+Qalys_PL<-sum(100000*propcada[c(1,3,5)]*QW) 
+Qalys_PL
+```
+### Cálculo de los Costes
+Los costes se han obtenido del decreto ley de pagos de Cataluña
+```{r}
+Coste_PL<-sum(100000*propcada[c(1,2)]*43400+100000*propcada[c(3,4)]*5000+100000*Precio)
+Coste_PL
+```
+### Cálculo de la ratio de coste-efectividad
+```{r}
+ACER_PL<-Coste_PL/Qalys_PL
+ACER_PL
+``` 
+##Comparación de ambas ramas
+### Diferencia de costes
+```{r}
+DifCostes<-Coste_FA-Coste_PL
+DifCostes
+```
+### Diferencia en QALYs
+```{r}
+DifQalys<-Qalys_FA-Qalys_PL
+DifQalys
+```
+### Ratio de coste-efectividad incremental
+```{r}
+DifCostes/DifQalys
+``` 
+El umbral a pagar por cada QALY extra más habitual es el de una vez la renta per cápita del país. Esto cumpliría dos principios de equidad fundamentales, tanto el de que a cada individuo le debe corresponder una parte equitativa de la riqueza del país, esto sería, una vez la renta per cápita, como el de sostenibilidad, pues si incrementamos un QALY, ese individuo, en promedio, producirá una renta per cápita. Este cálculo, sin duda es simplista, pero tiene cierta lógica y parece difícil justificar umbrales a pagar superiores, especialmente en un contexto de deuda extrema como el actual.
+La renta per cápita de España en 2021 fue de 23470 Euros. Por tanto el Ratio de coste-efectividad incremental de Bamlanivimab/Etesimab sería considerado no coste-efectivo.
