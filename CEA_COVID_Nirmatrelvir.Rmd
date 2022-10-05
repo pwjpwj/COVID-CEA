@@ -113,3 +113,77 @@ DifCostes/DifQalys
 ``` 
 El umbral a pagar por cada QALY extra más habitual es el de una vez la renta per cápita del país. Esto cumpliría dos principios de equidad fundamentales, tanto el de que a cada individuo le debe corresponder una parte equitativa de la riqueza del país, esto sería, una vez la renta per cápita, como el de sostenibilidad, pues si incrementamos un QALY, ese individuo, en promedio, producirá una renta per cápita. Este cálculo, sin duda es simplista, pero tiene cierta lógica y parece difícil justificar umbrales a pagar superiores, especialmente en un contexto de deuda extrema como el actual.
 La renta per cápita de España en 2021 fue de 23470 Euros. Por tanto el Ratio de coste-efectividad incremental de Nirmatrelvir/ritonavir sería considerado como coste-efectivo.
+
+# Análisis de sensibilidad univariado
+## Probabilidad de ingreso rango superior 
+### Con Nirmatrelvir
+```{r}
+ProbIng=0.0082 #Hammond et al NENGJM 2022
+ProbICU=0.15
+ProbExitusICU=0
+ProbExitus=0
+Precio=700
+QW=1
+
+propcada<-Tree(ProbIng=ProbIng, ProbICU=ProbICU, ProbExitusICU=ProbExitusICU, ProbExitus=ProbExitus)
+pob=sum(100000*propcada[c(1,3,5)])
+Qalys_FA<-sum(QalyCalc(pob=pob, m=m))
+Coste_FA<-sum(100000*propcada[c(1,2)]*43400+100000*propcada[c(3,4)]*5000+100000*Precio)
+Coste_FA
+Qalys_FA
+
+ACER_FA<-Coste_FA/Qalys_FA
+ACER_FA
+```
+### Sin Nirmatrelvir Probab ingreso elevada
+```{r}
+ProbIng=0.0653+(0.0653*0.2)
+ProbICU=0.15
+ProbExitusICU=9/385 #Hammond et al 2022
+ProbExitus=0.05 #Balaz et al.
+
+Precio=0
+
+propcada<-Tree(ProbIng=ProbIng, ProbICU=ProbICU, ProbExitusICU=ProbExitusICU, ProbExitus=ProbExitus)
+pob=sum(100000*propcada[c(1,3,5)])
+Qalys_PL<-sum(QalyCalc(pob=pob, m=m))
+Coste_PL<-sum(100000*propcada[c(1,2)]*43400+100000*propcada[c(3,4)]*5000+100000*Precio)
+Coste_PL
+Qalys_PL
+
+ACER_PL<-Coste_PL/Qalys_PL
+ACER_PL
+```
+```{r}
+DifCostes<-Coste_FA-Coste_PL
+DifCostes
+```
+### Diferencia en QALYs
+```{r}
+DifQalys<-Qalys_FA-Qalys_PL
+DifQalys
+```
+### Ratio de coste-efectividad incremental
+```{r}
+DifCostes/DifQalys
+``` 
+
+## Probabilidad de ingreso rango inferior
+```{r}
+ProbIng=0.0062 #Hammond et al NENGJM 2022
+ProbICU=0.15
+ProbExitusICU=0
+ProbExitus=0
+Precio=700
+QW=1
+
+propcada<-Tree(ProbIng=ProbIng, ProbICU=ProbICU, ProbExitusICU=ProbExitusICU, ProbExitus=ProbExitus)
+pob=sum(100000*propcada[c(1,3,5)])
+Qalys_FA<-sum(QalyCalc(pob=pob, m=m))
+Coste_FA<-sum(100000*propcada[c(1,2)]*43400+100000*propcada[c(3,4)]*5000+100000*Precio)
+Coste_FA
+Qalys_FA
+
+ACER_FA<-Coste_FA/Qalys_FA
+ACER_FA
+```
